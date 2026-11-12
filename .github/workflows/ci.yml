@@ -1,4 +1,4 @@
-name: Foundation checks
+name: Project checks
 
 on:
   push:
@@ -24,3 +24,5 @@ jobs:
       - run: python -m ruff check .
       - run: python -m ruff format --check .
       - run: python -c "import connectivity_support_agent"
+      - run: python -m pip check
+      - run: python -m pytest

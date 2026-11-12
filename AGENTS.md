@@ -16,16 +16,18 @@ These instructions supplement higher-priority instructions; they do not override
 - Do not commit credentials, virtual environments, caches, or build output.
 - Do not choose a license without the owner's decision.
 
-Verified foundation commands (activate `.venv` first):
+Verified feature commands (use the project interpreter explicitly):
 
 ```sh
-python -m pip install -r requirements-dev.txt
-python -m pip install --no-build-isolation -e '.[dev]'
-python -m pip install -e '.[dev]'
-python -m ruff check .
-python -m ruff format --check .
-python -c "import connectivity_support_agent"
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m pip install --no-build-isolation -e '.[dev]'
+.venv/bin/python -m pip check
+.venv/bin/python -m ruff check .
+.venv/bin/python -m ruff format --check .
+.venv/bin/python -m pytest
+.venv/bin/python -c "import connectivity_support_agent"
 ```
 
-The plain editable install is a compatibility check; use the requirements file
-first for the pinned development environment. Revalidate after dependency changes.
+Use the requirements file first for the pinned development environment.
+Revalidate after dependency changes. Run the UI with
+`.venv/bin/python -m streamlit run app.py`.
