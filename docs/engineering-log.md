@@ -74,3 +74,78 @@ Agent competencies remain unevaluated. A license decision remains with the owner
 Git initialization initially required sandbox escalation because `.git` is protected.
 The authorized retry succeeded with `git init -b main`; explicit project paths
 were staged and the complete staged diff and `git diff --cached --check` reviewed.
+
+## 2026-11-12 — Simulated service-status feature
+
+### Inspection and implementation decisions
+
+Read AGENTS.md, README, package configuration, requirements, CI, this log, and
+learning progress. The checkout was clean on main at e3519e2, with the expected
+GitHub origin. `git fetch origin` and `git merge --ff-only origin/main` confirmed
+main was current, then `git switch -c codex/service-status` created the feature
+branch. No unrelated changes were present or replaced.
+
+Used `.venv/bin/python` for every Python install, check, test, and app run.
+Verified `sys.executable` points to this repository's `.venv/bin/python`,
+`sys.prefix` to the repository's `.venv`, and `sys.prefix != sys.base_prefix`.
+Base prefix: `/opt/homebrew/opt/python@3.12/Frameworks/Python.framework/Versions/3.12`.
+Interpreter remains CPython 3.12.14 on macOS ARM64; no host packages were installed.
+
+Implemented the prescribed typed dictionary and deterministic messages in the
+core, checking type before strip/casefold and rejecting blank input. Each call
+constructs a fresh result. Streamlit is only imported by the root UI, which uses
+a form, explicit submission, distinct status presentations, validation feedback,
+and an expandable JSON view. No agent decisions or external service calls exist.
+
+Official PyPI metadata verified Streamlit 1.67.0 requires Python >=3.11, compatible
+with this environment. Checked official CLI, form, and AppTest API documentation:
+
+- https://pypi.org/project/streamlit/
+- https://docs.streamlit.io/get-started/installation/command-line
+- https://docs.streamlit.io/develop/api-reference/execution-flow/st.form
+- https://docs.streamlit.io/develop/api-reference/app-testing/st.testing.v1.apptest
+
+Added Streamlit to project dependencies using the existing exact-pin convention.
+Captured resolved dependencies with `.venv/bin/python -m pip freeze --all
+--exclude-editable`; all original foundation pins were preserved. Streamlit
+metadata declares watchdog only off Darwin. Official PyPI metadata verified
+watchdog 7.1.0 requires Python >=3.11; added it with that platform marker for Linux
+CI reproducibility. Its Linux installation is validated by CI, not by macOS.
+
+### Actual local validation
+
+Successfully ran the supported installation sequence:
+
+```sh
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m pip install --no-build-isolation -e '.[dev]'
+.venv/bin/python -m pip check
+.venv/bin/python -m ruff check .
+.venv/bin/python -m ruff format --check .
+.venv/bin/python -m pytest
+```
+
+Used `.venv/bin/python -m ruff format .` to format new code before acceptance.
+Dependency consistency and Ruff checks passed. Pytest passed 26 cases: 20 core
+and 6 AppTest cases. Coverage includes fixtures, Unicode normalization, invalid
+input types, blank inputs, deterministic calls, mutation isolation, initial UI
+without results, all statuses, structured output, and validation after a result.
+AppTest is simulated UI testing; no visual browser inspection was performed.
+
+Startup initially failed because the sandbox prohibited binding a socket.
+An authorized retry ran:
+
+```sh
+.venv/bin/python -m streamlit run app.py --server.headless=true --server.address=127.0.0.1 --server.port=8501 --browser.gatherUsageStats=false
+```
+
+Streamlit reported a running server at 127.0.0.1:8501. A local request using
+`.venv/bin/python` to `/_stcore/health` returned HTTP 200 and `ok`. Stopped the
+server after verification. This verifies startup/readiness, not browser rendering.
+The user command is `.venv/bin/python -m streamlit run app.py`.
+
+CI now runs pip check and the meaningful pytest suite alongside existing checks.
+Publication and CI results will be reported in the feature delivery; this entry
+records local evidence before publication. No merge or deployment is authorized.
+Learner mastery remains unevaluated; review the implementation and understanding
+before selecting further troubleshooting or agent work.

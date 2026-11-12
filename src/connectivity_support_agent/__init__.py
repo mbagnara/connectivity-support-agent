@@ -1,1 +1,1 @@
-"""Educational connectivity support agent; foundation only."""
+"""Educational connectivity support tools using simulated service data."""
