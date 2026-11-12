@@ -149,3 +149,70 @@ Publication and CI results will be reported in the feature delivery; this entry
 records local evidence before publication. No merge or deployment is authorized.
 Learner mastery remains unevaluated; review the implementation and understanding
 before selecting further troubleshooting or agent work.
+
+## 2026-11-12 — Troubleshooting-guide lookup
+
+Inspected AGENTS.md, README, app, service core/tests, package configuration,
+requirements, CI, and progress. Checkout was clean on main at merge commit
+05a69b3 (PR #1). Verified origin, fetched, fast-forward synchronized main (already
+current), and created codex/troubleshooting-guides. No unrelated changes existed.
+
+Verified `.venv/bin/python` is the project executable, `sys.prefix` is the project
+`.venv`, and it differs from the Homebrew Python 3.12 base prefix. Reused CPython
+3.12.14 and existing package pins without installing or adding packages. Every
+Python command used the project interpreter explicitly.
+
+Implemented a private exact-identifier catalog with the supplied instructions
+verbatim, stable step IDs, prescribed errors/messages, and fresh nested results.
+The catalog is project-designed demonstration content, not an ISP manual or copied
+book material. Added a separate guide form, keyed widgets and result containers,
+placeholder validation, ordered steps, not-found warning, and structured output.
+No agent routing, execution of checks, completion state, diagnosis, or external
+calls were added. Existing service-status behavior is preserved.
+
+Verified official Streamlit APIs for keyed containers, selectbox, and submit:
+- https://docs.streamlit.io/develop/api-reference/layout/st.container
+- https://docs.streamlit.io/develop/api-reference/widgets/st.selectbox
+- https://docs.streamlit.io/develop/api-reference/execution-flow/st.form_submit_button
+
+Core tests cover all exact titles/instructions, order/IDs, known normalization,
+Unicode casefold on unknown input, strict identifiers, errors, repeatability,
+list mutation, and nested step mutation. AppTest retains service checks with
+stable widget keys and scoped result queries; adds all guide selections,
+placeholder validation, found-to-not-found cleanup, and boundary spies proving
+forms call only their own tool. An initial spy test failed after a synthetic
+intermediate AppTest rerun; corrected the test to select then submit as a form
+interaction. The final full suite passes; no failed check is hidden by skipping.
+
+Actual commands and outcomes:
+
+```sh
+.venv/bin/python -m ruff format .
+.venv/bin/python -m pip check
+.venv/bin/python -m ruff check .
+.venv/bin/python -m ruff format --check .
+.venv/bin/python -m pytest
+```
+
+Dependency consistency, lint, and format checks passed. All 56 tests passed
+(20 service core, 25 guide core, 11 simulated UI cases). No API keys or external
+services were needed. Existing CI already runs this entire suite; no workflow or
+dependency changes were required.
+
+Started the app using:
+
+```sh
+.venv/bin/python -m streamlit run app.py --server.headless=true --server.address=127.0.0.1 --server.port=8501 --browser.gatherUsageStats=false
+```
+
+The local server started; a request using `.venv/bin/python` to
+`http://127.0.0.1:8501/_stcore/health` returned HTTP 200 `ok`. Stopped it afterward.
+This verifies startup/readiness. AppTest is simulated UI testing, and no actual
+browser inspection was performed. User command:
+`.venv/bin/python -m streamlit run app.py`.
+
+Updated README and learning progress. The learner's reported manual verification
+of five first-feature cases and explanation of unknown versus outage are recorded
+without extrapolating broader mastery. This feature's learner validation remains
+pending. Publication and final CI observations are reported in the delivery.
+No merge or deployment is authorized for this feature.

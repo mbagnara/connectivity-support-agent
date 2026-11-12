@@ -6,9 +6,9 @@ clarification, or simulate a human handoff.
 
 ## Current status
 
-A deterministic service-status tool and small Streamlit UI are implemented.
-This is a simulated lookup tool, not yet an AI agent. No model calls, real service
-coverage, troubleshooting, or human handoff are implemented.
+Deterministic service-status and troubleshooting-guide tools are implemented in
+a Streamlit UI as independent demonstrations. Model integration is not implemented.
+There is no agent routing, real service coverage, diagnosis, or human handoff.
 
 ## Isolated setup and checks
 
@@ -48,15 +48,14 @@ Blank input shows validation feedback. Unknown status is separate from outage.
 
 1. Implemented: deterministic service-status core, independently testable without UI.
 2. Implemented: Streamlit form calling the core with explicit simulation labels.
-3. Simulated troubleshooting tools with explicit input/output contracts.
+3. Implemented: deterministic troubleshooting-guide retrieval with typed outputs.
 4. A bounded agent decision loop for answers, clarification, and simulated handoff.
 5. Model integration and scenario evaluation once the core contracts are established.
 
 The intended flow is user report → interface → decision loop → simulated tools →
 structured evidence → answer, clarification, or simulated human handoff. The
-decision loop and troubleshooting tools remain planned. Keep domain logic separate
-from UI and
-any future model provider. Each feature gets a `codex/` branch and a separate PR;
+decision loop remains planned. Keep domain logic separate
+from UI and any future model provider. Each feature gets a `codex/` branch and a separate PR;
 feature PRs are not automatically merged or deployed.
 
 ## Service-status contract
@@ -81,12 +80,52 @@ simulation notice and result or validation message, and can reveal the structure
 result. The core tool does not depend on Streamlit. Operational status does not
 establish a local device fault. No restoration estimates or real coverage are inferred.
 
+## Troubleshooting-guide lookup
+
+In **Troubleshooting guides**, select a symptom and click **Get troubleshooting
+guide**. **Cannot connect to Wi-Fi**, **Connected without internet access**, and
+**Slow connection** show an educational message and three ordered checks.
+**Other symptom** returns a warning with no steps. The placeholder shows
+**Select a symptom.** without calling the tool. Expand **Guide structured result**
+to inspect JSON. Both forms work independently; submitting one calls only its own
+tool. Results are scoped to the current submission, with no diagnostic history.
+
+`get_troubleshooting_guide(symptom: str)` in
+`connectivity_support_agent.troubleshooting` accepts exact identifiers, normalizing
+with `strip().casefold()`. It does not interpret natural-language descriptions or
+use fuzzy matching. Non-string input raises `TypeError("Symptom must be a string.")`;
+blank input raises `ValueError("Enter a nonempty symptom.")`.
+
+| Identifier | Guide title |
+| --- | --- |
+| `wifi_unavailable` | Cannot connect to Wi-Fi |
+| `connected_no_internet` | Connected without internet access |
+| `slow_connection` | Slow connection |
+
+The returned `TroubleshootingGuide` has normalized `symptom`, `status` (`found` or
+`not_found`), `title`, `steps`, `message`, and `simulated=True`. Each step has a
+stable `id` (`step_1` through `step_3`) and an `instruction`. Each call returns a
+fresh list and step dictionaries. Unknown identifiers (including the UI's `other`)
+return `not_found`, title **No guide available**, no steps, and **No troubleshooting
+guide is available for this symptom.** Known guides state: **Follow these
+demonstration checks and report what you observe. They do not establish a diagnosis.**
+
+This is a project-designed demonstration catalog, not a verified ISP manual or
+verbatim book content. The tool retrieves instructions; it does not execute checks,
+track completion, diagnose devices, or establish resolution. It performs no resets,
+credential collection, external calls, random generation, or automatic handoff.
+A future agent must choose the tool and map a user's description to valid arguments;
+that responsibility is not implemented in these independent UI demonstrations.
+
 ## Evaluation approach
 
 The suite covers fixtures, normalization (including Unicode casefold), unknown
 zones, invalid types, empty input, repeatability, and mutation isolation. Streamlit
 AppTest simulates initial state, all three statuses, structured output, and blank
-validation. This is simulated UI testing, not visual browser inspection. Later
+validation. Guide tests verify exact ordered catalog content, input validation,
+repeatability, nested mutation isolation, selection mapping, not-found transitions
+without stale steps, and independent tool calls. This is simulated UI testing,
+not visual browser inspection. Later
 evaluate scenarios covering
 answer versus clarification versus handoff, tool evidence use, bounded execution,
 and refusal to invent status or restoration estimates. Agent implementation
